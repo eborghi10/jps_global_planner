@@ -9,7 +9,6 @@ endif()
 
 set(BUILD_SHARED_LIBS ON)
 
-find_package(Eigen3 REQUIRED)
 find_package(jps3d REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -56,7 +55,6 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIRS}
   ${JPS3D_INCLUDE_DIRS}
 )
 

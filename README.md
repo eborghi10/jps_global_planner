@@ -64,7 +64,7 @@ break /catkin_ws/src/jps_global_planner/src/jps_ros.cpp:180
 ## Testing
 
 ```bash
-rosrun jps_global_planner test_distance_map_planner_2d `rospack find jps_global_planner`/test/data/corridor.yaml
+rosrun jps_global_planner test_jps_global_planner `rospack find jps_global_planner`/test/data/corridor.yaml
 ```
 
 ```bash
