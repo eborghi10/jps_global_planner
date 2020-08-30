@@ -32,11 +32,14 @@ install:
   # Add ONLY the package under integration to the workspace using a symlink
   - ln -s $TRAVIS_BUILD_DIR $PKG_SRC
 
-# Install all dependencies
+# Install all dependencies using rosdep
 before_script:
-  - source /opt/ros/$CI_ROS_DISTRO/setup.bash
   # Clone jps3d
   - git clone https://github.com/KumarRobotics/jps3d.git ${CATKIN_WS_SRC}/jps3d
+  # Use rosdep to install all dependencies (including ROS itself)
+  - cd $CATKIN_WS
+  - source /opt/ros/$CI_ROS_DISTRO/setup.bash
+  - rosdep install --from-paths ./ -i -y --rosdistro $CI_ROS_DISTRO --skip-keys=jps3d
 
 # Compile and test
 script:
@@ -48,5 +51,5 @@ script:
   - rosrun jps_global_planner jps_global_planner_test `rospack find jps_global_planner`/test/data/corridor.yaml
   # Lint package files
   - sudo apt-get install -y python-catkin-lint
-  - catkin lint -W2 --strict --explain $PKG_SRC
+  - catkin lint -W2 --strict --explain $PKG_SRC --ignore plugin_missing_install
   - cd $CATKIN_WS/build/jps_global_planner && make roslint
