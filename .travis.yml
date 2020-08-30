@@ -29,17 +29,19 @@ before_install:
 install:
   # Create workspace
   - mkdir -p $CATKIN_WS_SRC
-  # Clone jps3d
-  - git clone https://github.com/KumarRobotics/jps3d.git ${PKG_SRC}/jps3d
   # Add ONLY the package under integration to the workspace using a symlink
-  - ln -s $TRAVIS_BUILD_DIR .
+  - ln -s $TRAVIS_BUILD_DIR $PKG_SRC
 
 # Install all dependencies using rosdep
 before_script:
   - source /opt/ros/$CI_ROS_DISTRO/setup.bash
-  - cd $CATKIN_WS
+  - cd $CATKIN_WS_SRC
+  # Clone jps3d
+  - git clone https://github.com/KumarRobotics/jps3d.git ${CATKIN_WS_SRC}/jps3d
   # Use rosdep to install all dependencies (including ROS itself)
+  - cd $CATKIN_WS
   - rosdep install --from-paths ./ -i -y --rosdistro $CI_ROS_DISTRO
+  - catking build -DCMAKE_BUILD_TYPE=Release
 
 # Compile and test
 script:
