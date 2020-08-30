@@ -19,7 +19,7 @@ before_install:
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
   # Prepare rosdep to install dependencies
   - sudo apt-get update -qq
-  - sudo apt-get install -y python-rosdep
+  - sudo apt-get install -y python-rosdep python-catkin-tools
   - sudo rosdep init
   - rosdep update
   # Install ROS
@@ -28,25 +28,28 @@ before_install:
 
 install:
   # Create workspace
-  - mkdir -p $PKG_SRC
-  # Clone jps3d
-  - git clone https://github.com/KumarRobotics/jps3d.git ${PKG_SRC}/jps3d
+  - mkdir -p $CATKIN_WS_SRC
   # Add ONLY the package under integration to the workspace using a symlink
   - ln -s $TRAVIS_BUILD_DIR $PKG_SRC
+
+# Install all dependencies using rosdep
+before_script:
+  # Clone jps3d
+  - git clone https://github.com/KumarRobotics/jps3d.git ${CATKIN_WS_SRC}/jps3d
   # Use rosdep to install all dependencies (including ROS itself)
   - cd $CATKIN_WS
-  - rosdep install --from-paths ./ -i -y --rosdistro $CI_ROS_DISTRO
-
-script:
   - source /opt/ros/$CI_ROS_DISTRO/setup.bash
+  - rosdep install --from-paths ./ -i -y --rosdistro $CI_ROS_DISTRO --skip-keys=jps3d
+
+# Compile and test
+script:
   - cd $CATKIN_WS
   # Build packages
-  - catkin_make_isolated -DCMAKE_BUILD_TYPE=Release
-  - source devel_isolated/setup.bash
-  - ls -la ${CATKIN_WS}/src
+  - catkin build -DCMAKE_BUILD_TYPE=Release
+  - source devel/setup.bash
   # Run tests
-  # - rosrun jps_global_planner test_jps_global_planner `rospack find jps_global_planner`/test/data/corridor.yaml
+  - rosrun jps_global_planner jps_global_planner_test `rospack find jps_global_planner`/test/data/corridor.yaml
   # Lint package files
-  # - sudo apt-get install -y python-catkin-lint
-  # - catkin lint -W2 --strict --explain $PKG_SRC
-  # - catkin_make_isolated roslint
+  - sudo apt-get install -y python-catkin-lint
+  - catkin lint -W2 --strict --explain $PKG_SRC --ignore plugin_missing_install
+  - cd $CATKIN_WS/build/jps_global_planner && make roslint

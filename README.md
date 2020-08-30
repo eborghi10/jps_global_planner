@@ -66,7 +66,3 @@ break /catkin_ws/src/jps_global_planner/src/jps_ros.cpp:180
 ```bash
 rosrun jps_global_planner test_jps_global_planner `rospack find jps_global_planner`/test/data/corridor.yaml
 ```
-
-```bash
-catkin_make roslint
-```
