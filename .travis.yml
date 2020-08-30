@@ -19,7 +19,7 @@ before_install:
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
   # Prepare rosdep to install dependencies
   - sudo apt-get update -qq
-  - sudo apt-get install -y python-rosdep
+  - sudo apt-get install -y python-rosdep python-catkin-pkg
   - sudo rosdep init
   - rosdep update
   # Install ROS
@@ -28,17 +28,21 @@ before_install:
 
 install:
   # Create workspace
-  - mkdir -p $PKG_SRC
+  - mkdir -p $CATKIN_WS_SRC
   # Clone jps3d
   - git clone https://github.com/KumarRobotics/jps3d.git ${PKG_SRC}/jps3d
   # Add ONLY the package under integration to the workspace using a symlink
-  - ln -s $TRAVIS_BUILD_DIR $PKG_SRC
-  # Use rosdep to install all dependencies (including ROS itself)
+  - ln -s $TRAVIS_BUILD_DIR .
+
+# Install all dependencies using rosdep
+before_script:
+  - source /opt/ros/$CI_ROS_DISTRO/setup.bash
   - cd $CATKIN_WS
+  # Use rosdep to install all dependencies (including ROS itself)
   - rosdep install --from-paths ./ -i -y --rosdistro $CI_ROS_DISTRO
 
+# Compile and test
 script:
-  - source /opt/ros/$CI_ROS_DISTRO/setup.bash
   - cd $CATKIN_WS
   # Build packages
   - catkin build -DCMAKE_BUILD_TYPE=Release
