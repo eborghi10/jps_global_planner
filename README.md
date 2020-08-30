@@ -12,7 +12,7 @@ A global planner for ROS based on Jump Point Search algorithm.
 
 ![Build Status](https://api.travis-ci.org/eborghi10/jps_global_planner.svg?branch=master)
 [![GitHub issues](https://img.shields.io/github/issues-raw/eborghi10/jps_global_planner)](https://github.com/eborghi10/jps_global_planner/issues)
-[![GitHub](https://img.shields.io/github/license/eborghi10/jps_global_planner)](https://github.com/eborghi10/jps_global_planner/blob/kinetic-devel/LICENSE)
+[![GitHub](https://img.shields.io/github/license/eborghi10/jps_global_planner)](https://github.com/eborghi10/jps_global_planner/blob/master/LICENSE)
 
 ## Install dependencies
 
