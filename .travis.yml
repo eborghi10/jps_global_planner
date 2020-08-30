@@ -41,12 +41,11 @@ script:
   - source /opt/ros/$CI_ROS_DISTRO/setup.bash
   - cd $CATKIN_WS
   # Build packages
-  - catkin_make_isolated -DCMAKE_BUILD_TYPE=Release
-  - source devel_isolated/setup.bash
-  - ls -la ${CATKIN_WS}/src
+  - catkin build -DCMAKE_BUILD_TYPE=Release
+  - source devel/setup.bash
   # Run tests
-  # - rosrun jps_global_planner test_jps_global_planner `rospack find jps_global_planner`/test/data/corridor.yaml
+  - rosrun jps_global_planner jps_global_planner_test `rospack find jps_global_planner`/test/data/corridor.yaml
   # Lint package files
-  # - sudo apt-get install -y python-catkin-lint
-  # - catkin lint -W2 --strict --explain $PKG_SRC
-  # - catkin_make_isolated roslint
+  - sudo apt-get install -y python-catkin-lint
+  - catkin lint -W2 --strict --explain $PKG_SRC
+  - cd $CATKIN_WS/build/jps_global_planner && make roslint

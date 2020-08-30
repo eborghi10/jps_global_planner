@@ -17,6 +17,7 @@
   <build_depend>base_local_planner</build_depend>
   <build_depend>costmap_2d</build_depend>
   <build_depend>geometry_msgs</build_depend>
+  <build_depend>jps3d</build_depend>
   <build_depend>nav_core</build_depend>
   <build_depend>pluginlib</build_depend>
   <build_depend>roscpp</build_depend>
@@ -25,6 +26,7 @@
   <build_export_depend>base_local_planner</build_export_depend>
   <build_export_depend>costmap_2d</build_export_depend>
   <build_export_depend>geometry_msgs</build_export_depend>
+  <build_export_depend>jps3d</build_export_depend>
   <build_export_depend>nav_core</build_export_depend>
   <build_export_depend>pluginlib</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>
@@ -33,6 +35,7 @@
   <exec_depend>base_local_planner</exec_depend>
   <exec_depend>costmap_2d</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>jps3d</exec_depend>
   <exec_depend>nav_core</exec_depend>
   <exec_depend>pluginlib</exec_depend>
   <exec_depend>roscpp</exec_depend>
@@ -42,6 +45,6 @@
 
   <export>
     <!-- In order for pluginlib to query all available plugins on a system across all ROS packages, each package must explicitly specify the plugins it exports and which package libraries contain those plugins. -->
-    <nav_core plugin="${prefix}/plugins/jsp_planner_plugin.xml" />
+    <nav_core plugin="${prefix}/plugins/jps_planner_plugin.xml" />
   </export>
 </package>

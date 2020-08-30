@@ -102,3 +102,4 @@ add_test(test_distance_map_planner_2d ${PROJECT_NAME}_test ${CMAKE_SOURCE_DIR}/t
 
 set(ROSLINT_CPP_OPTS "--filter=-build/c++11,-build/header_guard")
 roslint_cpp()
+roslint_add_test()
