@@ -24,7 +24,6 @@ before_install:
   - rosdep update
   # Install ROS
   - sudo apt-get install -y ros-${CI_ROS_DISTRO}-ros-base
-  - sudo apt install -y libeigen3-dev libyaml-cpp-dev libboost-dev cmake
 
 install:
   # Create workspace
@@ -34,8 +33,12 @@ install:
 
 # Install all dependencies using rosdep
 before_script:
-  # Clone jps3d
-  - git clone https://github.com/KumarRobotics/jps3d.git ${CATKIN_WS_SRC}/jps3d
+  # Install jps3d
+  - sudo apt install -y libeigen3-dev libyaml-cpp-dev libboost-dev cmake
+  - git clone https://github.com/KumarRobotics/jps3d.git /tmp/jps3d
+  - mkdir -p /tmp/jps3d/build && cd /tmp/jps3d/build && cmake .. && make -j$(nproc)
+  - sudo make install
+  - sudo ldconfig
   # Use rosdep to install all dependencies (including ROS itself)
   - cd $CATKIN_WS
   - source /opt/ros/$CI_ROS_DISTRO/setup.bash
@@ -45,7 +48,7 @@ before_script:
 script:
   - cd $CATKIN_WS
   # Build packages
-  - catkin build -DCMAKE_BUILD_TYPE=Release
+  - catkin_make -DCMAKE_BUILD_TYPE=Release -j$(nproc)
   - source devel/setup.bash
   # Run tests
   - rosrun jps_global_planner jps_global_planner_test `rospack find jps_global_planner`/test/data/corridor.yaml

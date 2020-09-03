@@ -46,6 +46,8 @@ catkin_package(
     pluginlib
     roscpp
     std_msgs
+  DEPENDS
+    jps3d
 )
 
 ###########
@@ -62,16 +64,15 @@ add_library (jps_planner_ros src/jps_ros.cpp)
 target_link_libraries(jps_planner_ros ${catkin_LIBRARIES} ${JPS3D_LIBRARIES})
 add_dependencies(jps_planner_ros ${catkin_EXPORTED_TARGETS})
 
-add_executable(${PROJECT_NAME}_node src/jps_node.cpp)
-target_link_libraries(${PROJECT_NAME}_node jps_planner_ros ${JPS3D_LIBRARIES} ${catkin_LIBRARIES})
-set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME jps_global_planner)
+add_executable(${PROJECT_NAME} src/jps_node.cpp)
+target_link_libraries(${PROJECT_NAME} jps_planner_ros ${JPS3D_LIBRARIES} ${catkin_LIBRARIES})
 
 #############
 ## Install ##
 #############
 
 install(TARGETS
-    ${PROJECT_NAME}_node
+    ${PROJECT_NAME}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
