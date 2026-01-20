@@ -1,0 +1,14 @@
+# Common costmap parameters
+robot_radius: 0.105
+obstacle_range: 3.0
+raytrace_range: 3.5
+
+# Observation sources (empty for static map demo)
+observation_sources: ""
+
+# Map type
+map_type: costmap
+
+# Inflation layer
+inflation_radius: 0.55
+cost_scaling_factor: 3.0

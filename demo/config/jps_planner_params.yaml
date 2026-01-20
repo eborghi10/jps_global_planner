@@ -1,0 +1,14 @@
+# JPS Global Planner parameters
+debug: false
+
+# Distance Map Planner parameters
+dmp:
+  potential_radius:
+    x: 0.5
+    y: 0.5
+  search_radius:
+    x: 0.5
+    y: 0.5
+  potential_map_range:
+    x: 2.0
+    y: 2.0
