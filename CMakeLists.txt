@@ -10,6 +10,9 @@ endif()
 set(BUILD_SHARED_LIBS ON)
 
 find_package(jps3d REQUIRED)
+# Set lowercase variables for catkin_package DEPENDS
+set(jps3d_INCLUDE_DIRS ${JPS3D_INCLUDE_DIRS})
+set(jps3d_LIBRARIES ${JPS3D_LIBRARIES})
 
 find_package(catkin REQUIRED COMPONENTS
   base_local_planner

@@ -1,0 +1,39 @@
+{
+  "name": "ROS Noetic JPS Global Planner",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "ms-iot.vscode-ros",
+        "twxs.cmake",
+        "redhat.vscode-xml",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "ros.distro": "noetic"
+      }
+    }
+  },
+  "runArgs": [
+    "--network=host",
+    "--privileged"
+  ],
+  "containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}",
+    "QT_X11_NO_MITSHM": "1",
+    "DISABLE_ROS1_EOL_WARNINGS": "1"
+  },
+  "mounts": [
+    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind"
+  ],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/catkin_ws/src/jps_global_planner,type=bind",
+  "workspaceFolder": "/catkin_ws/src/jps_global_planner",
+  "postCreateCommand": "/bin/bash .devcontainer/post-create.sh",
+  "remoteUser": "ros"
+}
