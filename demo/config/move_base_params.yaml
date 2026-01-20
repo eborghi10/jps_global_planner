@@ -1,0 +1,47 @@
+# Move base parameters
+controller_frequency: 5.0
+planner_patience: 5.0
+controller_patience: 15.0
+conservative_reset_dist: 3.0
+recovery_behavior_enabled: true
+clearing_rotation_allowed: true
+shutdown_costmaps: false
+oscillation_timeout: 0.0
+oscillation_distance: 0.5
+planner_frequency: 1.0
+
+# Trajectory Planner parameters
+TrajectoryPlannerROS:
+  max_vel_x: 0.22
+  min_vel_x: 0.05
+  max_vel_theta: 2.75
+  min_vel_theta: -2.75
+  min_in_place_vel_theta: 1.0
+  
+  acc_lim_x: 2.5
+  acc_lim_theta: 3.2
+  
+  holonomic_robot: false
+  
+  meter_scoring: true
+  
+  xy_goal_tolerance: 0.1
+  yaw_goal_tolerance: 0.1
+  
+  sim_time: 1.5
+  sim_granularity: 0.025
+  vx_samples: 6
+  vtheta_samples: 20
+  
+  path_distance_bias: 32.0
+  goal_distance_bias: 24.0
+  occdist_scale: 0.01
+  
+  heading_lookahead: 0.325
+  heading_scoring: false
+  heading_scoring_timestep: 0.8
+  dwa: true
+  
+  simple_attractor: false
+  
+  publish_cost_grid_pc: true

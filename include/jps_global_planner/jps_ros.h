@@ -132,6 +132,7 @@ class JumpPointSearchROS : public nav_core::BaseGlobalPlanner
 
   private:
     void clearRobotCell(const geometry_msgs::PoseStamped& global_pose, unsigned int mx, unsigned int my);
+    void updateMapFromCostmap();
     bool debug_;
     boost::mutex mutex_;
     ros::ServiceServer make_plan_srv_;

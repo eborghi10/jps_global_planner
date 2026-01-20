@@ -34,8 +34,11 @@
 #include <costmap_2d/costmap_2d.h>
 
 #include <sensor_msgs/point_cloud2_iterator.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <algorithm>
+#include <cmath>
 #include <iterator>
 #include <string>
 #include <vector>
@@ -113,7 +116,17 @@ void JumpPointSearchROS::initialize(std::string name, costmap_2d::Costmap2D* cos
     JPS::Tmap map_data;
     map_data.resize(dimension);
     for (unsigned int i = 0; i < dimension; i++)
-      map_data[i] = map_array[i] > 0 ? 1 : 0;
+    {
+      // JPS library uses: 0 = free, 100 = occupied, -1 = unknown
+      // Costmap uses: 0 = free, 253 = inscribed, 254 = lethal, 255 = unknown
+      unsigned char cost = map_array[i];
+      if (cost == costmap_2d::NO_INFORMATION)
+        map_data[i] = -1;  // unknown
+      else if (cost >= costmap_2d::INSCRIBED_INFLATED_OBSTACLE)
+        map_data[i] = 100;  // occupied
+      else
+        map_data[i] = 0;  // free
+    }
 
     const decimal_t map_resolution = costmap_->getResolution();
 
@@ -151,6 +164,39 @@ void JumpPointSearchROS::initialize(std::string name, costmap_2d::Costmap2DROS* 
 {
   costmap_ros_ = costmap_ros;
   initialize(name, costmap_ros->getCostmap(), costmap_ros->getGlobalFrameID());
+}
+
+void JumpPointSearchROS::updateMapFromCostmap()
+{
+  const Vec2f map_origin(costmap_->getOriginX(), costmap_->getOriginY());
+  const Vec2i map_dimension(costmap_->getSizeInCellsX(), costmap_->getSizeInCellsY());
+  const int32_t dimension(costmap_->getSizeInCellsX() * costmap_->getSizeInCellsY());
+
+  unsigned char* map_array = costmap_->getCharMap();
+  JPS::Tmap map_data;
+  map_data.resize(dimension);
+  for (unsigned int i = 0; i < dimension; i++)
+  {
+    // JPS library uses: 0 = free, 100 = occupied, -1 = unknown
+    // Costmap uses: 0 = free, 253 = inscribed, 254 = lethal, 255 = unknown
+    unsigned char cost = map_array[i];
+    if (cost == costmap_2d::NO_INFORMATION)
+      map_data[i] = -1;  // unknown
+    else if (cost >= costmap_2d::INSCRIBED_INFLATED_OBSTACLE)
+      map_data[i] = 100;  // occupied
+    else
+      map_data[i] = 0;  // free
+  }
+
+  const decimal_t map_resolution = costmap_->getResolution();
+
+  map_util_->setMap(
+      map_origin,
+      map_dimension,
+      map_data,
+      map_resolution);
+
+  jps_planner_->updateMap();
 }
 
 
@@ -220,6 +266,9 @@ bool JumpPointSearchROS::makePlan(const geometry_msgs::PoseStamped& start,
   // Clear the starting cell within the costmap because we know it can't be an obstacle
   clearRobotCell(start, mx, my);
 
+  // Update the map data from the current costmap before planning
+  updateMapFromCostmap();
+
   /**
    * World: coordinates in the "map" frame
    * Map: discretized coordinates for the occupancy grid
@@ -253,8 +302,6 @@ bool JumpPointSearchROS::makePlan(const geometry_msgs::PoseStamped& start,
   ROS_DEBUG("[JPS] Planning path from [%f, %f] to [%f, %f]",
       start_w[0], start_w[1], goal_w[0], goal_w[1]);
 
-  jps_planner_->updateMap();
-
   bool result = jps_planner_->plan(start_w, goal_w, /*eps*/1, /*use_jps*/true);
 
   if (!result) return false;
@@ -266,12 +313,31 @@ bool JumpPointSearchROS::makePlan(const geometry_msgs::PoseStamped& start,
   jps_path.header.stamp = ros::Time::now();
   const std::size_t jps_path_size = path_jps.size();
   jps_path.poses.resize(jps_path_size);
-  for (int i=0; i < jps_path_size; i++)
+  for (std::size_t i = 0; i < jps_path_size; i++)
   {
     geometry_msgs::PoseStamped msg;
+    msg.header.frame_id = global_frame_;
+    msg.header.stamp = ros::Time::now();
     msg.pose.position.x = path_jps[i](0);
     msg.pose.position.y = path_jps[i](1);
-    msg.pose.orientation.w = 1;
+    // Calculate orientation based on direction to next point
+    double yaw = 0.0;
+    if (i + 1 < jps_path_size)
+    {
+      double dx = path_jps[i + 1](0) - path_jps[i](0);
+      double dy = path_jps[i + 1](1) - path_jps[i](1);
+      yaw = std::atan2(dy, dx);
+    }
+    else if (i > 0)
+    {
+      // Last point: use direction from previous point
+      double dx = path_jps[i](0) - path_jps[i - 1](0);
+      double dy = path_jps[i](1) - path_jps[i - 1](1);
+      yaw = std::atan2(dy, dx);
+    }
+    tf2::Quaternion q;
+    q.setRPY(0, 0, yaw);
+    msg.pose.orientation = tf2::toMsg(q);
     jps_path.poses[i] = msg;
   }
   jps_path_pub_.publish(jps_path);
@@ -286,18 +352,37 @@ bool JumpPointSearchROS::makePlan(const geometry_msgs::PoseStamped& start,
 
   const vec_Vec2f path_dist = dmp_planner_->getRawPath();
 
-  // Fill plan to be returned
-  std::transform(path_dist.cbegin(), path_dist.cend(),
-    std::back_inserter(plan), [this](const Vec2f& g)
+  // Fill plan to be returned with proper orientations
+  const std::size_t path_size = path_dist.size();
+  for (std::size_t i = 0; i < path_size; i++)
+  {
+    geometry_msgs::PoseStamped ps;
+    ps.header.stamp = ros::Time::now();
+    ps.header.frame_id = global_frame_;
+    ps.pose.position.x = path_dist[i][0];
+    ps.pose.position.y = path_dist[i][1];
+    
+    // Calculate orientation based on direction to next point
+    double yaw = 0.0;
+    if (i + 1 < path_size)
     {
-      geometry_msgs::PoseStamped ps;
-      ps.header.stamp = ros::Time::now();
-      ps.header.frame_id = global_frame_;
-      ps.pose.position.x = g[0];
-      ps.pose.position.y = g[1];
-      return ps;
+      double dx = path_dist[i + 1][0] - path_dist[i][0];
+      double dy = path_dist[i + 1][1] - path_dist[i][1];
+      yaw = std::atan2(dy, dx);
     }
-  );  // NOLINT(whitespace/parens)
+    else if (i > 0)
+    {
+      // Last point: use direction from previous point
+      double dx = path_dist[i][0] - path_dist[i - 1][0];
+      double dy = path_dist[i][1] - path_dist[i - 1][1];
+      yaw = std::atan2(dy, dx);
+    }
+    tf2::Quaternion q;
+    q.setRPY(0, 0, yaw);
+    ps.pose.orientation = tf2::toMsg(q);
+    
+    plan.push_back(ps);
+  }
 
   // Publish the plan for visualization purposes
   publishPlan(plan, 0.0, 1.0, 0.0, 0.0);

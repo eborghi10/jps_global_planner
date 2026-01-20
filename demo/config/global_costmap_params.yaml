@@ -1,0 +1,21 @@
+# Global costmap parameters
+global_costmap:
+  global_frame: map
+  robot_base_frame: base_footprint
+  update_frequency: 1.0
+  publish_frequency: 1.0
+  static_map: true
+  rolling_window: false
+  transform_tolerance: 0.5
+  
+  plugins:
+    - {name: static_layer, type: "costmap_2d::StaticLayer"}
+    - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+  
+  static_layer:
+    map_topic: /map
+    subscribe_to_updates: true
+  
+  inflation_layer:
+    inflation_radius: 0.55
+    cost_scaling_factor: 3.0

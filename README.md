@@ -14,7 +14,25 @@ A global planner for ROS based on Jump Point Search algorithm.
 [![GitHub issues](https://img.shields.io/github/issues-raw/eborghi10/jps_global_planner)](https://github.com/eborghi10/jps_global_planner/issues)
 [![GitHub](https://img.shields.io/github/license/eborghi10/jps_global_planner)](https://github.com/eborghi10/jps_global_planner/blob/master/LICENSE)
 
-## Install dependencies
+## Quick Start with Dev Container (Recommended)
+
+The easiest way to test this planner is using the included Dev Container:
+
+1. Open this project in VS Code
+2. Install the "Remote - Containers" extension
+3. Press `F1` → "Dev Containers: Reopen in Container"
+4. Wait for the container to build and the workspace to compile
+5. Run the demo:
+   ```bash
+   roslaunch jps_global_planner demo.launch
+   ```
+6. In RViz, use the "2D Nav Goal" tool to set navigation goals
+
+See [demo/README.md](demo/README.md) for more details.
+
+## Manual Installation
+
+### Install dependencies
 
 ```bash
 /catkin_ws/src $ git clone https://github.com/KumarRobotics/jps3d.git
